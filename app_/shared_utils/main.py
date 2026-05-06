@@ -104,8 +104,8 @@ def _build_base_zone_layout() -> list[list[ZoneType]]:
 
 def create_sample_grid() -> Grid:
 	zone_layout = _build_base_zone_layout()
-	hub_positions = {(1, 3), (5, 6)}
-	charging_positions = {(2, 4), (6, 1)}
+	hub_positions = {(1, 3), (2, 1), (5, 6)}
+	charging_positions = {(2, 3), (2, 4), (5, 7), (6, 1)}
 	medical_pickup_positions = {(4, 0), (5, 0), (9, 7)}
 	no_fly_positions = {(3, 6)}
 
