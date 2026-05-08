@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections import deque
 from dataclasses import asdict, dataclass
 from typing import Literal
 
@@ -112,70 +111,7 @@ def _has_forbidden_neighbor(grid: Grid, cell: GridCell) -> bool:
     return any(neighbor.zone in {"School", "Hospital"} for neighbor in grid.get_neighbors(cell.row, cell.col))
 
 
-def solve_problem_with_backtracking(problem: CSPProblem) -> ValidationResult:
-    errors: list[ValidationError] = []
 
-    def dfs(index: int) -> None:
-        if index >= len(problem.variables):
-            return
-
-        variable = problem.variables[index]
-        if not variable.domain:
-            errors.append(_build_error(variable))
-            dfs(index + 1)
-            return
-
-        for _candidate in variable.domain[:1]:
-            dfs(index + 1)
-            break
-
-    dfs(0)
-    return ValidationResult(valid=not errors, errors=errors, warnings=[])
-
-
-def solve_problem_with_forward_checking(problem: CSPProblem) -> ValidationResult:
-    errors: list[ValidationError] = []
-    domains = {variable.name: list(variable.domain) for variable in problem.variables}
-
-    def propagate(index: int) -> bool:
-        if index >= len(problem.variables):
-            return True
-
-        variable = problem.variables[index]
-        current_domain = domains[variable.name]
-        if not current_domain:
-            errors.append(_build_error(variable))
-            return False
-
-        for candidate in current_domain[:1]:
-            snapshot = {name: list(domain) for name, domain in domains.items()}
-            if _forward_prune(problem, variable, candidate, domains, index + 1):
-                if propagate(index + 1):
-                    return True
-            domains.clear()
-            domains.update(snapshot)
-
-        return False
-
-    propagate(0)
-    return ValidationResult(valid=not errors, errors=errors, warnings=[])
-
-
-def solve_problem_with_arc_consistency(problem: CSPProblem) -> ValidationResult:
-    domains = {variable.name: list(variable.domain) for variable in problem.variables}
-    queue = deque(variable.name for variable in problem.variables)
-
-    while queue:
-        variable_name = queue.popleft()
-        variable = _variable_by_name(problem, variable_name)
-        if _revise_domain(problem, variable, domains):
-            if not domains[variable.name]:
-                break
-            for neighbor in _dependent_variables(problem, variable):
-                queue.append(neighbor.name)
-
-    errors = [_build_error(variable) for variable in problem.variables if not domains[variable.name]]
-    return ValidationResult(valid=not errors, errors=errors, warnings=[])
 
 
 def _build_error(variable: CSPVariable) -> ValidationError:
@@ -188,62 +124,12 @@ def _build_error(variable: CSPVariable) -> ValidationError:
     return ValidationError(rule=variable.rule, cell=variable.cell, message=messages[variable.rule])
 
 
-def _variable_by_name(problem: CSPProblem, variable_name: str) -> CSPVariable:
-    for variable in problem.variables:
-        if variable.name == variable_name:
-            return variable
-    raise KeyError(variable_name)
-
-
-def _dependent_variables(problem: CSPProblem, variable: CSPVariable) -> list[CSPVariable]:
-    if variable.rule == "R2":
-        return [candidate for candidate in problem.variables if candidate.rule == "R2" and candidate.name != variable.name]
-    if variable.rule == "R3":
-        return [candidate for candidate in problem.variables if candidate.rule == "R3" and candidate.name != variable.name]
-    if variable.rule == "R4":
-        return [candidate for candidate in problem.variables if candidate.rule == "R4" and candidate.name != variable.name]
-    return []
-
-
-def _forward_prune(
-    problem: CSPProblem,
-    variable: CSPVariable,
-    candidate: tuple[int, int],
-    domains: dict[str, list[tuple[int, int]]],
-    next_index: int,
-) -> bool:
-    domains[variable.name] = [candidate]
-    for future_variable in problem.variables[next_index:]:
-        future_domain = domains[future_variable.name]
-        if not future_domain:
-            continue
-        # The problem is mostly unary, but we still prune by keeping only legal
-        # support values for each future variable after the current assignment.
-        domains[future_variable.name] = [value for value in future_domain if _value_is_consistent(future_variable, value)]
-        if not domains[future_variable.name]:
-            return False
-    return True
-
-
 def _value_is_consistent(variable: CSPVariable, value: tuple[int, int]) -> bool:
     if variable.rule == "R1":
         return True
     if variable.rule in {"R2", "R3", "R4"}:
         return value in variable.domain
     return False
-
-
-def _revise_domain(problem: CSPProblem, variable: CSPVariable, domains: dict[str, list[tuple[int, int]]]) -> bool:
-    old_domain = domains[variable.name]
-    new_domain = [value for value in old_domain if _value_is_consistent(variable, value)]
-    if new_domain == old_domain:
-        return False
-    domains[variable.name] = new_domain
-    return True
-
-
-def validate_grid(grid: Grid) -> ValidationResult:
-    return solve_problem_with_backtracking(build_csp_problem(grid))
 
 
 def check_industrial_safety(grid: Grid) -> list[ValidationError]:

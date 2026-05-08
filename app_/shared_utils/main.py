@@ -159,3 +159,19 @@ def _default_demand(zone: ZoneType, density: int) -> float:
 
 def grid_to_dict(grid: Grid) -> list[list[dict]]:
 	return [[cell.to_dict() for cell in row] for row in grid.cells]
+
+
+# Import and expose all predefined grids from grid_defs
+try:
+	from .grid_defs import (
+		create_valid_sample_grid,
+		create_valid_compact_grid,
+		create_valid_sparse_grid,
+		create_grid_r1_violation,
+		create_grid_r2_violation,
+		create_grid_r3_violation,
+		create_grid_r4_violation,
+		create_grid_multi_violation,
+	)
+except ImportError:  # pragma: no cover
+	pass
