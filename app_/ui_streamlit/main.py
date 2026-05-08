@@ -10,10 +10,27 @@ import plotly.graph_objects as go
 import sys
 from pathlib import Path
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
+MODULE_DIR = Path(__file__).resolve().parent
+APP_DIR = MODULE_DIR.parent
+VALIDATOR_DIR = APP_DIR / "1_csp_validator"
 
-from shared_utils.main import Grid, GridCell, create_sample_grid, ZoneType
+# Add parent directory to path for imports
+sys.path.insert(0, str(APP_DIR))
+sys.path.insert(0, str(VALIDATOR_DIR))
+
+from shared_utils.main import Grid, GridCell
+from shared_utils.grid_defs import (
+	create_grid_multi_violation,
+	create_grid_r1_violation,
+	create_grid_r2_violation,
+	create_grid_r3_violation,
+	create_grid_r4_violation,
+	create_valid_compact_grid,
+	create_valid_sample_grid,
+)
+from backtracking import solve as backtracking_solve
+from forward_checking import solve as forward_checking_solve
+from arc_consistenct import solve as arc_consistency_solve
 
 
 # Color mapping for different zone types
@@ -32,6 +49,29 @@ MARKER_STYLES = {
 	"charging": "CHG",
 	"medical_pickup": "🏥",
 	"no_fly": "NO-FLY",
+}
+
+
+GRID_PRESETS = [
+	("Sample Grid", create_valid_sample_grid),
+	("Compact Valid Grid", create_valid_compact_grid),
+	("R1 Violation Grid", create_grid_r1_violation),
+	("R2 Violation Grid", create_grid_r2_violation),
+	("R3 Violation Grid", create_grid_r3_violation),
+	("R4 Violation Grid", create_grid_r4_violation),
+	("Multi-Violation Grid", create_grid_multi_violation),
+]
+
+ALGORITHM_LABELS = {
+	"backtracking": "Backtracking",
+	"forward_checking": "Forward Checking",
+	"arc_consistency": "Arc Consistency",
+}
+
+ALGORITHM_SOLVERS = {
+	"backtracking": backtracking_solve,
+	"forward_checking": forward_checking_solve,
+	"arc_consistency": arc_consistency_solve,
 }
 
 
@@ -236,18 +276,58 @@ def create_zone_distribution_figure(zone_df: pd.DataFrame) -> go.Figure:
 	return fig
 
 
+def get_grid_preset(index: int) -> tuple[str, Grid]:
+	"""Return the selected grid preset name and a freshly built grid."""
+	name, factory = GRID_PRESETS[index]
+	return name, factory()
+
+
+def render_validation_summary(validation_result: dict) -> None:
+	"""Render the CSP validation result and any rule violations."""
+	if validation_result["valid"]:
+		st.success("This grid is valid for the selected CSP algorithm.")
+		return
+
+	st.error("This grid is invalid. The validator found the following issue(s):")
+	for error in validation_result.get("errors", []):
+		cell = error.get("cell", ("?", "?"))
+		st.write(f"- {error.get('rule', 'Unknown rule')} at {cell}: {error.get('message', 'No details available')}")
+
+	warnings = validation_result.get("warnings", [])
+	if warnings:
+		st.caption("Warnings: " + " | ".join(warnings))
+
+
 def main():
 	"""Main Streamlit app."""
 	st.set_page_config(page_title="AeroNet Lite - Grid Visualization", layout="wide")
 	
 	st.title("🚁 AeroNet Lite - Grid Visualization")
 	st.markdown("Autonomous Drone Delivery Simulation System")
-	
-	# Create or load grid
-	if "grid" not in st.session_state:
-		st.session_state.grid = create_sample_grid()
-	
-	grid = st.session_state.grid
+
+	if "grid_index" not in st.session_state:
+		st.session_state.grid_index = 0
+
+	controls_left, controls_right = st.columns([3, 1])
+
+	with controls_left:
+		selected_algorithm = st.selectbox(
+			"Validation algorithm",
+			options=list(ALGORITHM_LABELS.keys()),
+			format_func=lambda name: ALGORITHM_LABELS[name],
+			index=0,
+		)
+
+	with controls_right:
+		st.markdown("<div style='height:1.7rem;'></div>", unsafe_allow_html=True)
+		if st.button("Change Grid", use_container_width=True):
+			st.session_state.grid_index = (st.session_state.grid_index + 1) % len(GRID_PRESETS)
+
+	grid_name, grid = get_grid_preset(st.session_state.grid_index)
+	validation_result = ALGORITHM_SOLVERS[selected_algorithm](grid).to_dict()
+
+	st.subheader(f"Current Grid: {grid_name}")
+	render_validation_summary(validation_result)
 	
 	# Main visualization
 	st.subheader("Interactive Grid Visualization")
