@@ -3,15 +3,11 @@
 from __future__ import annotations
 
 try:
-    from .constraint_engine import ValidationResult, validate_grid
+    from .constraint_engine import ValidationResult, build_csp_problem, solve_problem_with_forward_checking
 except ImportError:  # pragma: no cover - allows direct execution
-    from constraint_engine import ValidationResult, validate_grid
-
-
-def _prune_impossible_states(grid):
-    return grid
+    from constraint_engine import ValidationResult, build_csp_problem, solve_problem_with_forward_checking
 
 
 def solve(grid) -> ValidationResult:
-    pruned_grid = _prune_impossible_states(grid)
-    return validate_grid(pruned_grid)
+    problem = build_csp_problem(grid)
+    return solve_problem_with_forward_checking(problem)

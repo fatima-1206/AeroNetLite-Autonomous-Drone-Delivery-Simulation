@@ -159,4 +159,3 @@ def _default_demand(zone: ZoneType, density: int) -> float:
 
 def grid_to_dict(grid: Grid) -> list[list[dict]]:
 	return [[cell.to_dict() for cell in row] for row in grid.cells]
-

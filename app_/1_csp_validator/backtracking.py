@@ -1,16 +1,13 @@
-"""Backtracking-style CSP validation for AeroNet Lite."""
+"""Backtracking CSP validation for AeroNet Lite."""
 
 from __future__ import annotations
 
 try:
-    from .constraint_engine import ValidationResult, validate_grid
+    from .constraint_engine import ValidationResult, build_csp_problem, solve_problem_with_backtracking
 except ImportError:  # pragma: no cover - allows direct execution
-    from constraint_engine import ValidationResult, validate_grid
-
-
-def _validate_rules_in_order(grid) -> ValidationResult:
-    return validate_grid(grid)
+    from constraint_engine import ValidationResult, build_csp_problem, solve_problem_with_backtracking
 
 
 def solve(grid) -> ValidationResult:
-    return _validate_rules_in_order(grid)
+    problem = build_csp_problem(grid)
+    return solve_problem_with_backtracking(problem)
