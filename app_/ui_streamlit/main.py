@@ -319,6 +319,7 @@ def main():
 		)
 
 	with controls_right:
+		st.markdown("<div style='height:1.7rem;'></div>", unsafe_allow_html=True)
 		if st.button("Change Grid", use_container_width=True):
 			st.session_state.grid_index = (st.session_state.grid_index + 1) % len(GRID_PRESETS)
 
