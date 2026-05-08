@@ -14,7 +14,7 @@ GRID_SIZE = 10
 ZoneType = Literal["Residential", "Industrial", "Hospital", "School", "Commercial", "Open Field"]
 
 
-@dataclass(slots=True)
+@dataclass
 class GridCell:
 	row: int
 	col: int
@@ -30,7 +30,7 @@ class GridCell:
 		return asdict(self)
 
 
-@dataclass(slots=True)
+@dataclass
 class Grid:
 	cells: list[list[GridCell]]
 
@@ -69,6 +69,19 @@ class Grid:
 	def iter_cells(self) -> Iterable[GridCell]:
 		for row in self.cells:
 			yield from row
+
+	def in_bounds(self, r: int, c: int) -> bool:
+		return is_within_bounds(r, c)
+
+	def is_blocked(self, r: int, c: int) -> bool:
+		cell = self.get_cell(r, c)
+		return cell is None or cell.no_fly
+
+	def move_cost(self, r: int, c: int) -> float:
+		cell = self.get_cell(r, c)
+		if cell is None:
+			return float('inf')
+		return 0.8 if cell.zone == "Commercial" else 1.0
 
 
 def is_within_bounds(row: int, col: int) -> bool:

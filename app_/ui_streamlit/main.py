@@ -9,10 +9,12 @@ import pandas as pd
 import plotly.graph_objects as go
 import sys
 from pathlib import Path
+import importlib.util
 
 MODULE_DIR = Path(__file__).resolve().parent
 APP_DIR = MODULE_DIR.parent
 VALIDATOR_DIR = APP_DIR / "1_csp_validator"
+ASTAR_DIR = APP_DIR / "3_astar_planner"
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(APP_DIR))
@@ -31,6 +33,13 @@ from shared_utils.grid_defs import (
 from backtracking import solve as backtracking_solve
 from forward_checking import solve as forward_checking_solve
 from arc_consistenct import solve as arc_consistency_solve
+
+# Import A* functions
+astar_spec = importlib.util.spec_from_file_location("astar_planner", str(ASTAR_DIR / "main.py"))
+astar_module = importlib.util.module_from_spec(astar_spec)
+astar_spec.loader.exec_module(astar_module)
+astar = astar_module.astar
+plan_delivery_route = astar_module.plan_delivery_route
 
 
 # Color mapping for different zone types
@@ -110,7 +119,7 @@ def create_grid_table(grid: Grid) -> pd.DataFrame:
 	return pd.DataFrame(data)
 
 
-def create_plotly_grid_visualization(grid: Grid) -> go.Figure:
+def create_plotly_grid_visualization(grid: Grid, paths: list[list[tuple[int, int]]] = None, points: dict = None) -> go.Figure:
 	"""Create an interactive Plotly visualization of the grid."""
 	fig = go.Figure()
 	
@@ -210,6 +219,37 @@ def create_plotly_grid_visualization(grid: Grid) -> go.Figure:
 					xanchor="center",
 					yanchor="middle",
 				)
+	
+	# Add paths if provided
+	if paths:
+		path_colors = ['red', 'blue', 'green']  # hub->pickup, pickup->dropoff, dropoff->hub
+		for i, path in enumerate(paths):
+			if path:
+				x_coords = [p[1] + 0.5 for p in path]
+				y_coords = [grid_size - p[0] - 0.5 for p in path]
+				fig.add_trace(go.Scatter(
+					x=x_coords,
+					y=y_coords,
+					mode='lines+markers',
+					line=dict(color=path_colors[i % len(path_colors)], width=3),
+					marker=dict(size=8, color=path_colors[i % len(path_colors)]),
+					name=f'Path {i+1}',
+					showlegend=True
+				))
+	
+	# Add special points if provided
+	if points:
+		for label, (r, c) in points.items():
+			fig.add_trace(go.Scatter(
+				x=[c + 0.5],
+				y=[grid_size - r - 0.5],
+				mode='markers+text',
+				marker=dict(size=15, color='yellow', symbol='star'),
+				text=[label],
+				textposition="top center",
+				name=label,
+				showlegend=True
+			))
 	
 	# Update layout
 	fig.update_layout(
@@ -420,6 +460,48 @@ def main():
 		# Create a simple metric display
 		for idx, row in zone_df.iterrows():
 			st.write(f"**{row['Zone']}**: {row['Count']} cells")
+
+
+	st.subheader("🚁 A* Path Planning")
+	
+	with st.expander("Plan Delivery Route", expanded=False):
+		col1, col2, col3 = st.columns(3)
+		
+		with col1:
+			hub_r = st.number_input("Hub Row", 0, 9, 0, key="hub_r")
+			hub_c = st.number_input("Hub Col", 0, 9, 0, key="hub_c")
+		
+		with col2:
+			pickup_r = st.number_input("Pickup Row", 0, 9, 1, key="pickup_r")
+			pickup_c = st.number_input("Pickup Col", 0, 9, 1, key="pickup_c")
+		
+		with col3:
+			dropoff_r = st.number_input("Dropoff Row", 0, 9, 2, key="dropoff_r")
+			dropoff_c = st.number_input("Dropoff Col", 0, 9, 2, key="dropoff_c")
+		
+		if st.button("Compute Route"):
+			hub = (hub_r, hub_c)
+			pickup = (pickup_r, pickup_c)
+			dropoff = (dropoff_r, dropoff_c)
+			
+			result = plan_delivery_route(hub, pickup, dropoff, grid)
+			
+			if result:
+				st.success(f"Route planned successfully! Total cost: {result['total_cost']:.2f}")
+				
+				paths = result['segments']
+				points = {"Hub": hub, "Pickup": pickup, "Dropoff": dropoff}
+				
+				fig_astar = create_plotly_grid_visualization(grid, paths, points)
+				st.plotly_chart(fig_astar, config={"responsive": True, "displayModeBar": False})
+				
+				# Show path details
+				for i, path in enumerate(paths):
+					segment_cost = sum(grid.move_cost(r, c) for r, c in path[1:]) if len(path) > 1 else 0
+					st.write(f"**Segment {i+1}**: {len(path)} steps, cost: {segment_cost:.2f}")
+					st.write(f"Path: {' -> '.join([f'({r},{c})' for r, c in path])}")
+			else:
+				st.error("Failed to plan route. Check positions.")
 
 
 if __name__ == "__main__":
