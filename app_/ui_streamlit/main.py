@@ -174,12 +174,12 @@ def create_plotly_grid_visualization(grid: Grid) -> go.Figure:
 	# Update layout
 	fig.update_layout(
 		title="<b>Sample 10x10 Region Grid</b>",
-		xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0, grid_size]),
-		yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0, grid_size]),
+		xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0, grid_size], constrain="domain"),
+		yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0, grid_size], scaleanchor="x", scaleratio=1),
 		hovermode="closest",
 		plot_bgcolor="white",
 		paper_bgcolor="white",
-		width=900,
+		autosize=True,
 		height=900,
 		margin=dict(l=50, r=50, t=80, b=50),
 	)
@@ -202,6 +202,40 @@ def create_legend():
 	return pd.DataFrame(legend_data), pd.DataFrame(marker_data)
 
 
+def render_zone_legend() -> None:
+	"""Render a color legend that matches the grid cells."""
+	for zone, color in ZONE_COLORS.items():
+		st.markdown(
+			f"<div style='display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;'>"
+			f"<span style='width:16px;height:16px;background:{color};border:1px solid #666;display:inline-block;'></span>"
+			f"<span>{zone}</span>"
+			f"</div>",
+			unsafe_allow_html=True,
+		)
+
+
+def create_zone_distribution_figure(zone_df: pd.DataFrame) -> go.Figure:
+	"""Create a color-matched bar chart for zone distribution."""
+	fig = go.Figure(
+		go.Bar(
+			x=zone_df["Zone"],
+			y=zone_df["Count"],
+			marker_color=[ZONE_COLORS.get(zone, "#999999") for zone in zone_df["Zone"]],
+			text=zone_df["Count"],
+			textposition="auto",
+		)
+	)
+	fig.update_layout(
+		margin=dict(l=10, r=10, t=10, b=10),
+		plot_bgcolor="white",
+		paper_bgcolor="white",
+		yaxis=dict(title="Cells", gridcolor="#EAEAEA"),
+		xaxis=dict(title="Zone", tickangle=-20),
+		showlegend=False,
+	)
+	return fig
+
+
 def main():
 	"""Main Streamlit app."""
 	st.set_page_config(page_title="AeroNet Lite - Grid Visualization", layout="wide")
@@ -218,7 +252,7 @@ def main():
 	# Main visualization
 	st.subheader("Interactive Grid Visualization")
 	fig = create_plotly_grid_visualization(grid)
-	st.plotly_chart(fig, width="stretch")
+	st.plotly_chart(fig, config={"responsive": True, "displayModeBar": False})
 	
 	# Legend section
 	st.subheader("Legend")
@@ -226,13 +260,13 @@ def main():
 	
 	with col1:
 		st.markdown("**Zone Types:**")
-		zone_legend, _ = create_legend()
-		st.dataframe(zone_legend, width="stretch", hide_index=True)
+		render_zone_legend()
 	
 	with col2:
 		st.markdown("**Special Markers:**")
 		_, marker_legend = create_legend()
-		st.dataframe(marker_legend, width="stretch", hide_index=True)
+		for _, row in marker_legend.iterrows():
+			st.write(f"{row['Marker']}: {row['Meaning']}")
 	
 	# Grid details table
 	st.subheader("Grid Details")
@@ -300,7 +334,7 @@ def main():
 	col1, col2 = st.columns(2)
 	
 	with col1:
-		st.bar_chart(zone_df.set_index("Zone"))
+		st.plotly_chart(create_zone_distribution_figure(zone_df), config={"responsive": True, "displayModeBar": False})
 	
 	with col2:
 		# Create a simple metric display
