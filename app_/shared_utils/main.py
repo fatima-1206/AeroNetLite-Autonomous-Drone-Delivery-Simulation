@@ -166,7 +166,6 @@ try:
 	from .grid_defs import (
 		create_valid_sample_grid,
 		create_valid_compact_grid,
-		create_valid_sparse_grid,
 		create_grid_r1_violation,
 		create_grid_r2_violation,
 		create_grid_r3_violation,
