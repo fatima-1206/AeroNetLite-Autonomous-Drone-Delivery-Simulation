@@ -1,9 +1,3 @@
-"""CSP validator entry point for AeroNet Lite.
-
-The public API dispatches to one of the available solver modes while keeping a
-single validation contract.
-"""
-
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -13,7 +7,7 @@ try:
 	from .backtracking import solve as backtracking_solve
 	from .constraint_engine import ValidationResult
 	from .forward_checking import solve as forward_checking_solve
-except ImportError:  # pragma: no cover - allows direct execution
+except ImportError:  
 	from pathlib import Path
 	import sys
 
@@ -28,23 +22,31 @@ except ImportError:  # pragma: no cover - allows direct execution
 	from forward_checking import solve as forward_checking_solve
 
 
+# type alias for the solver method name
 SolverName = str
 
 
+# wraps the validation result with metadata about which method was used
 @dataclass(slots=True)
 class CSPModuleResult:
+	# whether the grid is valid or not
 	valid: bool
+	# list of constraint violations found
 	errors: list[dict]
+	# non-critical warnings
 	warnings: list[str]
+	# which solving algorithm was used
 	method: str
 
+	# convert to a dictionary for easier serialization
 	def to_dict(self) -> dict:
 		return asdict(self)
 
 
+# the main public api function for grid validation
+# users call this to check if a grid is valid
 def check_all_constraints(grid, method: SolverName = "backtracking") -> dict:
-	"""Validate the grid with the requested CSP strategy."""
-
+	# map method names to their solver functions
 	solver_map = {
 		"backtracking": backtracking_solve,
 		"forward_checking": forward_checking_solve,
@@ -53,7 +55,9 @@ def check_all_constraints(grid, method: SolverName = "backtracking") -> dict:
 	if method not in solver_map:
 		raise ValueError(f"Unsupported CSP method: {method}")
 
+	# call the appropriate solver
 	result = solver_map[method](grid)
+	# convert the result to a dictionary with metadata
 	if isinstance(result, ValidationResult):
 		return {
 			"valid": result.valid,
@@ -65,14 +69,15 @@ def check_all_constraints(grid, method: SolverName = "backtracking") -> dict:
 	return result
 
 
+# alias for check_all_constraints to make it fit into the senario description
 def validate(grid, method: SolverName = "backtracking") -> dict:
-	"""Alias for check_all_constraints for a more concise call site."""
-
 	return check_all_constraints(grid, method=method)
 
 
+# if this file is run directly (not imported), test it with a sample grid
 if __name__ == "__main__":
 	from app_.shared_utils.main import create_sample_grid
 
+	# create a test grid and validate it
 	sample = create_sample_grid()
 	print(check_all_constraints(sample, method="backtracking"))

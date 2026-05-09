@@ -1,4 +1,3 @@
-"""Test suite for CSP validator against multiple grid configurations."""
 
 from __future__ import annotations
 
@@ -12,7 +11,6 @@ for path in (str(ROOT_DIR), str(APP_DIR)):
 	if path not in sys.path:
 		sys.path.insert(0, path)
 
-# Change to csp_validator directory to allow direct imports
 sys.path.insert(0, str(APP_DIR / "1_csp_validator"))
 
 from shared_utils.grid_defs import (
@@ -25,7 +23,6 @@ from shared_utils.grid_defs import (
 	create_grid_multi_violation,
 )
 
-# Import CSP validator
 from main import check_all_constraints
 
 
@@ -155,9 +152,6 @@ def run_all_tests() -> None:
 	test_all_methods()
 	test_violation_consistency_across_methods()
 	
-	print("\n" + "="*60)
-	print("ALL TESTS PASSED ✓")
-	print("="*60 + "\n")
 
 
 if __name__ == "__main__":

@@ -56,7 +56,7 @@ ZONE_COLORS = {
 MARKER_STYLES = {
 	"hub": "HUB",
 	"charging": "CHG",
-	"medical_pickup": "🏥",
+	"medical_pickup": "MED",
 	"no_fly": "NO-FLY",
 }
 
@@ -93,7 +93,7 @@ def get_cell_display_text(cell: GridCell) -> str:
 	elif cell.is_charging:
 		text = "CHG"
 	elif cell.is_medical_pickup:
-		text = "🏥"
+		text = "MED"
 	elif cell.no_fly:
 		text = "NO-FLY"
 	
@@ -151,7 +151,7 @@ def create_plotly_grid_visualization(grid: Grid, paths: list[list[tuple[int, int
 				if cell.is_charging:
 					markers.append("CHG")
 				if cell.is_medical_pickup:
-					markers.append("🏥")
+					markers.append("MED")
 				if cell.no_fly:
 					markers.append("NO-FLY")
 				
@@ -185,7 +185,7 @@ def create_plotly_grid_visualization(grid: Grid, paths: list[list[tuple[int, int
 				if cell.is_charging:
 					markers.append("CHG")
 				if cell.is_medical_pickup:
-					markers.append("🏥")
+					markers.append("MED")
 				if cell.no_fly:
 					markers.append("NO-FLY")
 				
@@ -275,7 +275,7 @@ def create_legend():
 	}
 	
 	marker_data = {
-		"Marker": ["HUB", "CHG", "🏥", "NO-FLY"],
+		"Marker": ["HUB", "CHG", "MED", "NO-FLY"],
 		"Meaning": ["Drone Hub", "Charging Pad", "Medical Supply", "No-Fly Zone"],
 	}
 	
@@ -342,7 +342,7 @@ def main():
 	"""Main Streamlit app."""
 	st.set_page_config(page_title="AeroNet Lite - Grid Visualization", layout="wide")
 	
-	st.title("🚁 AeroNet Lite - Grid Visualization")
+	st.title("AeroNet Lite - Grid Visualization")
 	st.markdown("Autonomous Drone Delivery Simulation System")
 
 	if "grid_index" not in st.session_state:
@@ -462,7 +462,7 @@ def main():
 			st.write(f"**{row['Zone']}**: {row['Count']} cells")
 
 
-	st.subheader("🚁 A* Path Planning")
+	st.subheader("A* Path Planning")
 	
 	with st.expander("Plan Delivery Route", expanded=False):
 		col1, col2, col3 = st.columns(3)
