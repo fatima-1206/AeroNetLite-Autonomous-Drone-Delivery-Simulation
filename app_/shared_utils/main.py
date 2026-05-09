@@ -1,9 +1,3 @@
-"""Shared grid model and helpers for AeroNet Lite.
-
-This module is the source of truth for the 10x10 simulation grid used by all
-other modules.
-"""
-
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, replace
@@ -185,5 +179,5 @@ try:
 		create_grid_r4_violation,
 		create_grid_multi_violation,
 	)
-except ImportError:  # pragma: no cover
+except ImportError:
 	pass
