@@ -1,10 +1,3 @@
-"""Predefined grid definitions for CSP validator testing.
-
-This module contains several grid configurations for testing:
-- Valid grids that pass all constraints
-- Invalid grids that violate specific rules
-"""
-
 from __future__ import annotations
 
 try:
@@ -22,7 +15,6 @@ except ImportError:  # pragma: no cover
 
 
 def create_valid_sample_grid() -> Grid:
-    """Sample grid from problem statement - all rules satisfied."""
     zone_layout = [
         ["Residential", "Residential", "Commercial", "Commercial", "Open Field", "Open Field", "School", "School", "Open Field", "Open Field"],
         ["Residential", "Residential", "Commercial", "Open Field", "Open Field", "Open Field", "School", "Open Field", "Open Field", "Open Field"],

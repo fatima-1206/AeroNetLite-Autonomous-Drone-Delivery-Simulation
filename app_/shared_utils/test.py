@@ -1,14 +1,9 @@
-"""Basic smoke tests for the shared grid module.
-
-Run this file directly with Python to verify the grid core before wiring up
-the other modules.
-"""
 
 from __future__ import annotations
 
 try:
 	from .main import GRID_SIZE, Grid, GridCell, create_sample_grid, get_neighbors, manhattan
-except ImportError:  # pragma: no cover - allows direct execution
+except ImportError:
 	from main import GRID_SIZE, Grid, GridCell, create_sample_grid, get_neighbors, manhattan
 
 
