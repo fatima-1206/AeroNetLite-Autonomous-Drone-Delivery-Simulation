@@ -17,6 +17,7 @@ from datetime import datetime
 MODULE_DIR = Path(__file__).resolve().parent
 APP_DIR = MODULE_DIR.parent
 VALIDATOR_DIR = APP_DIR / "1_csp_validator"
+FLEET_DIR = APP_DIR / "2_fleet_selector"
 ASTAR_DIR = APP_DIR / "3_astar_planner"
 DISRUPTION_DIR = APP_DIR / "4_disruption_handler"
 ML_DIR = APP_DIR / "5_ml_pipeline"
@@ -71,6 +72,28 @@ try:
         force_return_to_hub = disruption_module.force_return_to_hub
 except Exception as e:
     st.warning(f"Disruption Handler module not available. Some features will be disabled. Error: {e}")
+
+# Import Fleet Selector
+fleet_module = None
+select_fleet = None
+estimate_total_demand = None
+evaluate_fleet = None
+LIGHT_DRONE = None
+HEAVY_DRONE = None
+
+try:
+	fleet_spec = importlib.util.spec_from_file_location("fleet_selector", str(FLEET_DIR / "main.py"))
+	if fleet_spec:
+		fleet_module = importlib.util.module_from_spec(fleet_spec)
+		sys.modules[fleet_spec.name] = fleet_module
+		fleet_spec.loader.exec_module(fleet_module)
+		select_fleet = fleet_module.select_fleet
+		estimate_total_demand = fleet_module.estimate_total_demand
+		evaluate_fleet = fleet_module.evaluate_fleet
+		LIGHT_DRONE = fleet_module.LIGHT_DRONE
+		HEAVY_DRONE = fleet_module.HEAVY_DRONE
+except Exception as e:
+	st.warning(f"Fleet Selector module not available. Some features will be disabled. Error: {e}")
 
 # Import ML Pipeline
 ml_module = None
@@ -937,18 +960,178 @@ def main():
 			else:
 				st.error("Failed to plan route. Check positions.")
 	
-	# ========== NEW: Module 4 and Module 5 Sections ==========
+	# ========== Module 2: Fleet Selector ==========
 	
-	# Add separator
 	st.markdown("---")
 	
-	# Module 4: Disruption Handler
+	st.subheader("Module 2: Fleet Selector - Optimize Drone Fleet")
+	
+	if select_fleet is None:
+		st.warning("⚠️ Fleet Selector module not available. Please ensure Module 2 is properly installed.")
+	else:
+		# Fleet optimization controls
+		st.write("**Fleet Optimization Parameters:**")
+		
+		col1, col2, col3 = st.columns(3)
+		
+		with col1:
+			budget = st.number_input(
+				"Budget ($)",
+				min_value=1000,
+				max_value=100000,
+				value=10000,
+				step=1000,
+				key="fleet_budget"
+			)
+		
+		with col2:
+			method = st.radio(
+				"Optimization Method",
+				options=["ga", "bf"],
+				format_func=lambda x: "Genetic Algorithm" if x == "ga" else "Brute Force",
+				key="fleet_method",
+				horizontal=True
+			)
+		
+		with col3:
+			random_seed = st.number_input(
+				"Random Seed",
+				min_value=0,
+				max_value=1000,
+				value=42,
+				key="fleet_seed"
+			)
+		
+		# GA parameters
+		if method == "ga":
+			st.write("**Genetic Algorithm Settings:**")
+			ga_col1, ga_col2, ga_col3 = st.columns(3)
+			
+			with ga_col1:
+				pop_size = st.slider("Population Size", 10, 100, 30, key="fleet_pop_size")
+			
+			with ga_col2:
+				generations = st.slider("Generations", 10, 100, 40, key="fleet_generations")
+			
+			with ga_col3:
+				mutation_rate = st.slider("Mutation Rate", 0.0, 1.0, 0.2, key="fleet_mutation")
+		else:
+			pop_size = 30
+			generations = 40
+			mutation_rate = 0.2
+		
+		# Estimate demand
+		try:
+			estimated_demand = estimate_total_demand(grid)
+			st.info(f"📊 Estimated Total Demand: {estimated_demand:.2f} kg")
+		except Exception as e:
+			st.warning(f"Could not estimate demand: {e}")
+			estimated_demand = 0.0
+		
+		# Run optimization
+		if st.button("🚀 Optimize Fleet", key="optimize_fleet_btn"):
+			with st.spinner("Optimizing fleet configuration..."):
+				try:
+					fleet_result = select_fleet(
+						grid=grid,
+						budget=budget,
+						population_size=pop_size,
+						generations=generations,
+						mutation_rate=mutation_rate,
+						random_seed=random_seed,
+						method=method,
+					)
+					
+					st.success(f"✅ Fleet optimized using {method.upper() if method == 'bf' else 'GA'}!")
+					
+					# Display results
+					col1, col2, col3, col4 = st.columns(4)
+					with col1:
+						st.metric("Light Drones", int(fleet_result.light_drones))
+					with col2:
+						st.metric("Heavy Drones", int(fleet_result.heavy_drones))
+					with col3:
+						st.metric("Total Cost", f"${int(fleet_result.total_cost):,}")
+					with col4:
+						st.metric("Coverage", f"{fleet_result.coverage_percentage:.1f}%")
+					
+					st.write("**Fleet Details:**")
+					details_col1, details_col2 = st.columns(2)
+					with details_col1:
+						st.write(f"• Total Payload: {fleet_result.total_payload_kg:.1f} kg")
+						st.write(f"• Demand: {fleet_result.demand_kg:.1f} kg")
+					with details_col2:
+						st.write(f"• Budget Used: {fleet_result.budget_used_percentage:.1f}%")
+						st.write(f"• Optimization Score: {fleet_result.score:.2f}")
+					
+					if "fleet_results" not in st.session_state:
+						st.session_state.fleet_results = []
+					st.session_state.fleet_results.append(fleet_result.to_dict())
+					
+				except Exception as e:
+					st.error(f"Fleet optimization failed: {e}")
+		
+		# Display drone specifications
+		if LIGHT_DRONE and HEAVY_DRONE:
+			st.write("**Drone Specifications:**")
+			drone_specs = [
+				{
+					"Type": LIGHT_DRONE.name,
+					"Cost": f"${LIGHT_DRONE.cost:,}",
+					"Payload": f"{LIGHT_DRONE.payload_kg} kg",
+					"Max Range": f"{LIGHT_DRONE.max_range_cells} cells",
+				},
+				{
+					"Type": HEAVY_DRONE.name,
+					"Cost": f"${HEAVY_DRONE.cost:,}",
+					"Payload": f"{HEAVY_DRONE.payload_kg} kg",
+					"Max Range": f"{HEAVY_DRONE.max_range_cells} cells",
+				},
+			]
+			st.dataframe(pd.DataFrame(drone_specs), use_container_width=True, hide_index=True)
+		
+		# Manual evaluation
+		st.write("**Manual Fleet Evaluation:**")
+		eval_col1, eval_col2, eval_col3 = st.columns(3)
+		with eval_col1:
+			manual_light = st.number_input("Light Drones (Manual)", 0, 50, 5, key="manual_light")
+		with eval_col2:
+			manual_heavy = st.number_input("Heavy Drones (Manual)", 0, 50, 2, key="manual_heavy")
+		with eval_col3:
+			st.write("")
+			if st.button("📋 Evaluate Configuration", key="eval_fleet_btn"):
+				try:
+					eval_result = evaluate_fleet(manual_light, manual_heavy, budget=budget, demand_kg=estimated_demand)
+					st.success("✅ Configuration evaluated!")
+					eval_col1, eval_col2, eval_col3, eval_col4 = st.columns(4)
+					with eval_col1:
+						st.metric("Total Cost", f"${int(eval_result.total_cost):,}")
+					with eval_col2:
+						st.metric("Total Payload", f"{eval_result.total_payload_kg:.1f} kg")
+					with eval_col3:
+						st.metric("Coverage", f"{eval_result.coverage_percentage:.1f}%")
+					with eval_col4:
+						st.metric("Score", f"{eval_result.score:.2f}")
+				except Exception as e:
+					st.error(f"Evaluation failed: {e}")
+		
+		# Compare fleets if multiple results
+		if hasattr(st.session_state, "fleet_results") and len(st.session_state.fleet_results) > 1:
+			st.write("**Fleet Comparison:**")
+			comparison_df = pd.DataFrame(st.session_state.fleet_results)
+			st.dataframe(comparison_df, use_container_width=True)
+			if st.button("🗑️ Clear Results", key="clear_results"):
+				st.session_state.fleet_results = []
+				st.rerun()
+
+	# ========== Module 4: Disruption Handler ==========
+	
+	st.markdown("---")
 	render_disruption_handler(grid)
 	
-	# Add separator
+	# ========== Module 5: ML Pipeline ==========
 	st.markdown("---")
 	
-	# Module 5: ML Pipeline
 	render_ml_pipeline(grid)
 
 
