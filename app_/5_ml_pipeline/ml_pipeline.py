@@ -14,42 +14,56 @@ All file paths are relative to the project root (default arguments).
 from __future__ import annotations
 
 import os
-from typing import Dict, Any
+import sys
+from pathlib import Path
+from typing import Any, Dict
 
+import joblib
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.metrics import accuracy_score, confusion_matrix, mean_absolute_error, mean_squared_error
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error, mean_squared_error, accuracy_score, confusion_matrix
 from sklearn.preprocessing import LabelEncoder
-import joblib
-
-# Import shared grid model (do NOT redefine GridCell/Grid)
-
-#from app_.shared_utils.main import GridCell, Grid
-
-# Import shared grid model (do NOT redefine GridCell/Grid)
-# This handles both direct execution and being imported as a module
-import sys
-import os
 
 try:
     from app_.shared_utils.main import GridCell, Grid
 except ModuleNotFoundError:
-    # Add project root to path
-    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    if project_root not in sys.path:
-        sys.path.insert(0, project_root)
+    project_root = Path(__file__).resolve().parents[2]
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
     from app_.shared_utils.main import GridCell, Grid
     
 RANDOM_SEED = 42
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_DEMAND_MODEL_PATH = PROJECT_ROOT / "data" / "processed" / "demand_model.pkl"
+DEFAULT_ANOMALY_MODEL_PATH = PROJECT_ROOT / "data" / "processed" / "anomaly_model.pkl"
+
+
+def _zone_multiplier(cell: GridCell) -> float:
+    zone_weights = {
+        "Residential": 1.18,
+        "Commercial": 1.05,
+        "Hospital": 1.28,
+        "School": 0.92,
+        "Industrial": 0.72,
+        "Open Field": 0.42,
+    }
+    multiplier = zone_weights.get(cell.zone, 1.0)
+    if cell.is_hub:
+        multiplier *= 1.12
+    if cell.is_charging:
+        multiplier *= 1.04
+    if cell.is_medical_pickup:
+        multiplier *= 1.08
+    return multiplier
 
 
 def _ensure_dir_for(path: str) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
 
 
-def train_demand_model(csv_path: str = "data/raw/train.csv", model_path: str = "data/processed/demand_model.pkl") -> Dict[str, float]:
+def train_demand_model(csv_path: str = "data/raw/train.csv", model_path: str = str(DEFAULT_DEMAND_MODEL_PATH)) -> Dict[str, float]:
     """
     Train RandomForestRegressor on bike sharing `train.csv`.
 
@@ -91,7 +105,7 @@ def train_demand_model(csv_path: str = "data/raw/train.csv", model_path: str = "
     return {"mae": mae, "rmse": rmse}
 
 
-def predict_demand(hour: int, temp: float, humidity: float, weather: Any, season: Any, model_path: str = "data/processed/demand_model.pkl") -> float:
+def predict_demand(hour: int, temp: float, humidity: float, weather: Any, season: Any, model_path: str = str(DEFAULT_DEMAND_MODEL_PATH)) -> float:
     """Load trained demand model and predict a single demand value."""
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Demand model not found: {model_path}")
@@ -144,7 +158,7 @@ def create_synthetic_telemetry(output_path: str = "data/raw/synthetic_telemetry.
     return df
 
 
-def train_anomaly_model(csv_path: str = "data/raw/synthetic_telemetry.csv", model_path: str = "data/processed/anomaly_model.pkl") -> Dict[str, Any]:
+def train_anomaly_model(csv_path: str = "data/raw/synthetic_telemetry.csv", model_path: str = str(DEFAULT_ANOMALY_MODEL_PATH)) -> Dict[str, Any]:
     """
     Train a RandomForestClassifier on synthetic telemetry.
 
@@ -178,7 +192,7 @@ def train_anomaly_model(csv_path: str = "data/raw/synthetic_telemetry.csv", mode
     return {"accuracy": acc, "confusion_matrix": cm}
 
 
-def detect_anomaly(battery_drop: float, speed: float, route_deviation: float, model_path: str = "data/processed/anomaly_model.pkl") -> Dict[str, Any]:
+def detect_anomaly(battery_drop: float, speed: float, route_deviation: float, model_path: str = str(DEFAULT_ANOMALY_MODEL_PATH)) -> Dict[str, Any]:
     """Return predicted class and confidence for a telemetry sample."""
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Anomaly model not found: {model_path}")
@@ -187,13 +201,7 @@ def detect_anomaly(battery_drop: float, speed: float, route_deviation: float, mo
     clf = payload["model"]
     le = payload["label_encoder"]
 
-    #sample = np.array([[float(battery_drop), float(speed), float(route_deviation)]])
-    # Add this import at the top of ml_pipeline.py (if not already there)
-    import pandas as pd
-
-    # Then replace the sample line with:
-    sample = pd.DataFrame([[battery_drop, speed, route_deviation]], 
-                      columns=['battery_drop', 'speed', 'route_deviation'])
+    sample = pd.DataFrame([[float(battery_drop), float(speed), float(route_deviation)]], columns=["battery_drop", "speed", "route_deviation"])
     preds = clf.predict(sample)
     probs = clf.predict_proba(sample)
 
@@ -217,8 +225,8 @@ def get_module_5_output(grid: Grid, simulation_step: int) -> Dict[str, Any]:
     model_metrics: Dict[str, float] = {"mae": None, "accuracy": None}
 
     # Try to load demand model and anomaly model; swallow errors to allow graceful fallback
-    demand_model_path = "../../data/processed/demand_model.pkl"
-    anomaly_model_path = "../../data/processed/anomaly_model.pkl"
+    demand_model_path = str(DEFAULT_DEMAND_MODEL_PATH)
+    anomaly_model_path = str(DEFAULT_ANOMALY_MODEL_PATH)
 
     # For demand predictions we will use a simple heuristic for temperature/humidity/weather/season
     hour = simulation_step % 24
@@ -228,16 +236,21 @@ def get_module_5_output(grid: Grid, simulation_step: int) -> Dict[str, Any]:
     weather = "Clear"
     season = "Summer"
 
-    # Forecast for each cell (only return a small float per cell)
+    # Forecast for each cell. The same model prediction is scaled by cell density,
+    # zone type, and special-cell bonuses so neighboring cells do not collapse to
+    # identical values even when the base demand predictor is stable.
     for row in grid.cells:
         for cell in row:
             key = f"cell_({cell.row},{cell.col})"
             try:
                 pred = predict_demand(hour=hour, temp=temp, humidity=humidity, weather=weather, season=season, model_path=demand_model_path)
-                demand_forecast[key] = float(round(pred * (cell.density / 10000.0), 2))
+                density_factor = max(0.05, cell.density / 10000.0)
+                demand_value = pred * density_factor * _zone_multiplier(cell)
+                demand_forecast[key] = float(round(demand_value, 2))
             except Exception:
-                # Fallback: use the grid's inherent demand field scaled
-                demand_forecast[key] = float(round(cell.demand, 2))
+                density_factor = max(0.05, cell.density / 10000.0)
+                demand_value = (cell.demand + (hour / 24.0)) * density_factor * _zone_multiplier(cell)
+                demand_forecast[key] = float(round(demand_value, 2))
 
     # For anomaly detection, simulate a telemetry sample per hub cell (if any)
     rng = np.random.RandomState(RANDOM_SEED + simulation_step)
