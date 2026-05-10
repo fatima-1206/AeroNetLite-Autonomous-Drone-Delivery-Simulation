@@ -312,15 +312,15 @@ if __name__ == "__main__":
     print("AeroNet Lite - Real-Time Disruption Handler Demo")
     print("=" * 70 + "\n")
     
-    # Step 1: Initialize grid
+    # Step 1 Initialize grid
     print("[1] Initializing 10x10 simulation grid...")
     grid = create_sample_grid()
     print("    Grid loaded with hubs, no-fly zones, and charging stations\n")
     
-    # Step 2: Create sample drones with predefined routes
+    # Step 2 Create sample drones with predefined routes
     print("[2] Creating 3 sample drones with initial routes...")
     
-    # Drone D1: Route from (1,1) to (8,8) passing through (4,7)
+    # Drone D1 Route from (1,1) to (8,8) passing through (4,7)
     drone_d1 = Drone(
         id="D1",
         current_position=(1, 1),
@@ -329,7 +329,7 @@ if __name__ == "__main__":
         status="ACTIVE"
     )
     
-    # Drone D2: Route from (0,0) to (9,9) passing through (3,6)
+    # Drone D2 Route from (0,0) to (9,9) passing through (3,6)
     drone_d2 = Drone(
         id="D2",
         current_position=(0, 0),
@@ -338,7 +338,7 @@ if __name__ == "__main__":
         status="ACTIVE"
     )
     
-    # Drone D3: Route from (5,0) to (5,9) safe from current no-fly zones
+    # Drone D3 Route from (5,0) to (5,9) safe from current no-fly zones
     drone_d3 = Drone(
         id="D3",
         current_position=(5, 0),
@@ -353,42 +353,42 @@ if __name__ == "__main__":
     print(f"    Drone D2: {drone_d2.current_position} → {drone_d2.target} (ACTIVE)")
     print(f"    Drone D3: {drone_d3.current_position} → {drone_d3.target} (ACTIVE)\n")
     
-    # Step 3: Initialize DisruptionManager and begin monitoring
+    # Step 3 Initialize DisruptionManager and begin monitoring
     print("[3] Starting DisruptionManager...")
     manager = DisruptionManager()
     manager.add_event("DisruptionManager initialized - monitoring 3 drones")
     print()
     
-    # Step 4: Trigger first disruption (additional no-fly zone at 4,7)
+    # Step 4 Trigger first disruption (additional no-fly zone at 4,7)
     print("[4] Triggering disruption: Activating no-fly zone at (4, 7)...")
     manager.trigger_no_fly(grid, 4, 7)
     print()
     
-    # Step 5: Check routes and reroute affected drones
+    # Step 5 Check routes and reroute affected drones
     print("[5] Scanning drones for affected routes...")
     manager.check_and_reroute(drones, grid)
     print()
     
-    # Step 6: Trigger second disruption (no-fly at 3,6)
+    # Step 6 Trigger second disruption (no-fly at 3,6)
     print("[6] Triggering secondary disruption: Activating no-fly zone at (3, 6)...")
     manager.trigger_no_fly(grid, 3, 6)
     print()
     
-    # Step 7: Check routes again after second disruption
+    # Step 7 Check routes again after second disruption
     print("[7] Re-scanning all drones after secondary disruption...")
     manager.check_and_reroute(drones, grid)
     print()
     
-    # Step 8: Print final status report
+    # Step 8 Print final status report
     print("[8] Final Drone Status Report:")
     for drone in drones:
         route_length = len(drone.route)
         print(f"    {drone.id}: {drone.status:8s} | Target: {drone.target} | Route length: {route_length} waypoints")
     print()
     
-    # Step 9: Print complete event log
+    # Step 9 Print complete event log
     print("[9] Printing complete event log...")
     manager.print_event_log()
     
-    print("✅ Disruption Handler Demo Complete")
+    print("Disruption Handler Demo Complete")
     print("=" * 70 + "\n")

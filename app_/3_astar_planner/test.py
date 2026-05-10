@@ -14,7 +14,7 @@ def test_basic_astar():
     """Test basic A* functionality."""
     grid = create_sample_grid()
 
-    # Test 1: Simple adjacent cells
+    # Test 1 is to check Simple adjacent cells
     start = (0, 0)
     goal = (0, 1)
     path, cost, success = astar(start, goal, grid)
@@ -23,7 +23,7 @@ def test_basic_astar():
     assert cost == 1.0  # Residential to Residential
     assert path == [(0, 0), (0, 1)]
 
-    # Test 2: Through commercial corridor
+    # Test 2 Through commercial corridor
     start = (0, 2)  # Commercial
     goal = (0, 3)  # Commercial
     path, cost, success = astar(start, goal, grid)
@@ -31,7 +31,7 @@ def test_basic_astar():
     assert success == True
     assert cost == 0.8  # Commercial to Commercial
 
-    # Test 3: Blocked cell
+    # Test 3 is to check Blocked cell
     start = (0, 0)
     goal = (3, 6)  # No-fly zone
     path, cost, success = astar(start, goal, grid)
@@ -68,4 +68,4 @@ def test_plan_delivery():
 if __name__ == "__main__":
     test_basic_astar()
     test_plan_delivery()
-    print("All tests passed! ✅")
+    print("All tests passed")

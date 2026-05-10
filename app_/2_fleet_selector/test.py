@@ -37,7 +37,7 @@ def test_ga_is_deterministic_with_seed() -> None:
 	second = select_fleet(budget=10_000, random_seed=11)
 	assert first == second
 
-
+# check the answers of brute force
 def test_brute_force_selection() -> None:
 	grid = create_sample_grid()
 	demand_kg = estimate_total_demand(grid)
@@ -67,7 +67,7 @@ def test_drone_types_defined() -> None:
 	assert DRONE_TYPES[0].name == "Light Drone"
 	assert DRONE_TYPES[1].name == "Heavy Drone"
 
-
+# run all tests at once to see if fleet selector passes all tests
 def run_all_tests() -> None:
 	test_demand_estimation()
 	test_ga_returns_valid_selection()
