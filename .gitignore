@@ -27,7 +27,6 @@ env/
 .venv
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -48,3 +47,5 @@ htmlcov/
 # Streamlit cache
 .streamlit/
 _*.md
+config.bat
+node_modules
