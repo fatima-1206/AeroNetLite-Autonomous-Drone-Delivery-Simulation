@@ -1,105 +1,112 @@
-# AeroNet Lite - Autonomous Drone Delivery Simulation
+# [AeroNet Lite - Autonomous Drone Delivery Simulation](https://aeronetlite.streamlit.app/)
 
-A comprehensive drone delivery simulator implementing Constraint Satisfaction Problems (CSP), fleet planning, A* routing, disruption handling, and ML-based demand forecasting.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://aeronetlite.streamlit.app/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Status](https://img.shields.io/badge/Status-Academic%20Project-0A7E8C)](./README.md)
 
-## Development Instructions
+AeroNet Lite is an AI-powered drone delivery simulator on a 10x10 city grid. It combines CSP validation, fleet optimization, A* routing, disruption-aware rerouting, and ML forecasting into one integrated system.
 
-### Git Workflow
-1. **Create your own branch** for your module:
-   ```bash
-   git checkout -b <your-name>/<module-name>
-   # Example: git checkout -b fatima/csp-validator
-   ```
+## Tech Stack
 
-2. **Develop and commit** on your branch:
-   ```bash
-   git add .
-   git commit -m "Descriptive commit message"
-   ```
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-150458?logo=pandas&logoColor=white)
+![NumPy](https://img.shields.io/badge/NumPy-013243?logo=numpy&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikitlearn&logoColor=white)
+![Matplotlib](https://img.shields.io/badge/Matplotlib-11557C?logo=plotly&logoColor=white)
 
-3. **Push to your branch**:
-   ```bash
-   git push origin <your-name>/<module-name>
-   ```
+## Live App
 
-4. **Open a Pull Request (PR)** when ready:
-   - Push your branch to GitHub
-   - Go to the repository and create a PR to `main`
-   - Wait for team review and approval before merging
+- Demo URL: https://aeronetlite.streamlit.app/
 
-**Note:** Always work on your own branch. Never commit directly to `main`.
+## Core Modules
 
+| Module | Purpose | AI Technique |
+|---|---|---|
+| `1_csp_validator` | Validates city layout constraints | CSP rule checking |
+| `2_fleet_selector` | Picks light/heavy drone counts under budget | Heuristic / Genetic Algorithm |
+| `3_astar_planner` | Computes safe shortest routes | A* Search |
+| `4_disruption_handler` | Handles dynamic no-fly disruptions and reroutes | Real-time replanning |
+| `5_ml_pipeline` | Forecasts demand and detects anomalies | Regression + Classification |
+| `shared_utils` | Shared grid model and utility logic | Reusable core utilities |
+| `ui_streamlit` | Interactive simulation and analytics dashboard | Streamlit UI |
 
-## 🚁 Project Overview
+## Project Structure
 
-AeroNet Lite models a 10x10 city grid where autonomous drones deliver packages. The system integrates five core AI modules:
-
-| Module | Description | AI Technique |
-|--------|-------------|--------------|
-| **1. CSP Validator** | Validates city layout against operational constraints | Constraint Satisfaction Problem |
-| **2. Fleet Selector** | Selects optimal drone fleet under budget constraints | Heuristic/Genetic Algorithm |
-| **3. A* Planner** | Plans shortest safe delivery routes | A* Search |
-| **4. Disruption Handler** | Reacts to no-fly zones and reroutes affected drones | Optimization |
-| **5. ML Pipeline** | Forecasts demand and detects flight anomalies | Regression & Classification |
-
-## 📁 Project Structure
-
-```
+```text
 asst3/
 ├── app_/
-│   ├── 1_csp_validator/      # Grid layout constraint validation
-│   ├── 2_fleet_selector/     # Drone fleet optimization
-│   ├── 3_astar_planner/      # Delivery route planning
-│   ├── 4_disruption_handler/ # Dynamic rerouting on disruptions
-│   ├── 5_ml_pipeline/        # Demand forecasting & anomaly detection
-│   ├── shared_utils/         # Shared grid model and utilities
-│   └── ui_streamlit/         # Dashboard and visualization
-├── ProblemStatement.md        # Full requirements and specifications
-├── requirements.txt          # Python dependencies
-└── README.md                 # This file
+│   ├── 1_csp_validator/
+│   ├── 2_fleet_selector/
+│   ├── 3_astar_planner/
+│   ├── 4_disruption_handler/
+│   ├── 5_ml_pipeline/
+│   ├── shared_utils/
+│   └── ui_streamlit/
+├── data/
+├── notebooks/
+├── ProblemStatement.md
+├── requirements.txt
+└── README.md
 ```
 
+## Quick Start
 
-## 🗺️ Grid Model (Shared Across All Modules)
+1. Clone the repo and move into the project directory.
+2. Create and activate a virtual environment.
+3. Install dependencies.
+4. Run the Streamlit UI.
 
-Each cell in the 10x10 grid contains:
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+streamlit run app_/ui_streamlit/main.py
+```
+
+## Grid Model Snapshot
+
+Each grid cell includes location, zoning, operations, and demand fields.
 
 ```python
 {
-    "row": int,                    # Row index (0-9)
-    "col": int,                    # Column index (0-9)
-    "zone": str,                   # Zone type: "Residential", "Industrial", "Hospital", "School", "Open Field"
-    "density": int,                # Population density (used for demand estimation)
-    "is_hub": bool,                # Drone hub location
-    "is_charging": bool,           # Charging pad location
-    "is_medical_pickup": bool,     # Medical supply pickup point
-    "no_fly": bool,                # No-fly restriction (blocks routing)
-    "demand": float                # Estimated delivery demand
+    "row": int,
+    "col": int,
+    "zone": str,
+    "density": int,
+    "is_hub": bool,
+    "is_charging": bool,
+    "is_medical_pickup": bool,
+    "no_fly": bool,
+    "demand": float
 }
 ```
 
-## 👥 Team Quick Reference
+## Team Workflow
 
-### Module Assignments
-- **1_csp_validator**: Geography/Constraints specialist
-- **2_fleet_selector**: Optimization/Search specialist
-- **3_astar_planner**: Pathfinding specialist
-- **4_disruption_handler**: Real-time systems specialist
-- **5_ml_pipeline**: Machine Learning specialist
-- **shared_utils**: Data model owner (coordinate with all modules)
-- **ui_streamlit**: Integration/Visualization specialist
+1. Create a branch per module:
 
-### Collaboration Best Practices
-1. **Always use the shared grid model** from `shared_utils/` - don't create duplicate definitions
-2. **Test your module independently** before integration
-3. **Document assumptions** about grid data format in your module
-4. **Commit early and often** with descriptive messages
-5. **Update shared_utils/** if grid model needs changes (communicate with team)
+```bash
+git checkout -b <your-name>/<module-name>
+```
 
-## 📚 Additional Resources
+2. Commit your changes:
 
-- See `ProblemStatement.md` for full technical specifications
-- Each module directory contains a `_.txt` file with module-specific notes
-- Check `test.py` files for usage examples
+```bash
+git add .
+git commit -m "Descriptive commit message"
+```
+
+3. Push and open a PR to `main`:
+
+```bash
+git push origin <your-name>/<module-name>
+```
+
+## References
+
+- Full scope and requirements: `ProblemStatement.md`
+- Module notes: `app_/*/_.md`
+- Examples/tests: `app_/*/test.py`
 
 
