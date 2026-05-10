@@ -81,43 +81,43 @@ except Exception as e:
     st.warning(f"Disruption Handler module not available. Some features will be disabled. Error: {e}")
 
 # Import Fleet Selector
-try:
-    from fleet_selector import (
-        select_fleet,
-        estimate_total_demand,
-        evaluate_fleet,
-    )
-
-    from fleet_selector.constants import (
-        LIGHT_DRONE,
-        HEAVY_DRONE,
-    )
-
-except Exception as e:
-    st.warning(
-        f"Fleet Selector module not available. "
-        f"Some features will be disabled. Error: {e}"
-    )
-# fleet_module = None
-# select_fleet = None
-# estimate_total_demand = None
-# evaluate_fleet = None
-# LIGHT_DRONE = None
-# HEAVY_DRONE = None
-
 # try:
-# 	fleet_spec = importlib.util.spec_from_file_location("fleet_selector", str(FLEET_DIR / "main.py"))
-# 	if fleet_spec:
-# 		fleet_module = importlib.util.module_from_spec(fleet_spec)
-# 		sys.modules[fleet_spec.name] = fleet_module
-# 		fleet_spec.loader.exec_module(fleet_module)
-# 		select_fleet = fleet_module.select_fleet
-# 		estimate_total_demand = fleet_module.estimate_total_demand
-# 		evaluate_fleet = fleet_module.evaluate_fleet
-# 		LIGHT_DRONE = fleet_module.LIGHT_DRONE
-# 		HEAVY_DRONE = fleet_module.HEAVY_DRONE
+#     from fleet_selector import (
+#         select_fleet,
+#         estimate_total_demand,
+#         evaluate_fleet,
+#     )
+
+#     from fleet_selector.constants import (
+#         LIGHT_DRONE,
+#         HEAVY_DRONE,
+#     )
+
 # except Exception as e:
-# 	st.warning(f"Fleet Selector module not available. Some features will be disabled. Error: {e}")
+#     st.warning(
+#         f"Fleet Selector module not available. "
+#         f"Some features will be disabled. Error: {e}"
+#     )
+fleet_module = None
+select_fleet = None
+estimate_total_demand = None
+evaluate_fleet = None
+LIGHT_DRONE = None
+HEAVY_DRONE = None
+
+try:
+	fleet_spec = importlib.util.spec_from_file_location("fleet_selector", str(FLEET_DIR / "main.py"))
+	if fleet_spec:
+		fleet_module = importlib.util.module_from_spec(fleet_spec)
+		sys.modules[fleet_spec.name] = fleet_module
+		fleet_spec.loader.exec_module(fleet_module)
+		select_fleet = fleet_module.select_fleet
+		estimate_total_demand = fleet_module.estimate_total_demand
+		evaluate_fleet = fleet_module.evaluate_fleet
+		LIGHT_DRONE = fleet_module.LIGHT_DRONE
+		HEAVY_DRONE = fleet_module.HEAVY_DRONE
+except Exception as e:
+	st.warning(f"Fleet Selector module not available. Some features will be disabled. Error: {e}")
 
 # Import ML Pipeline
 ml_module = None
