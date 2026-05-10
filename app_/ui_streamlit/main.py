@@ -303,7 +303,6 @@ def run_20_step_simulation():
     
     # Initialize grid if not exists
     if "sim_grid" not in st.session_state:
-        from shared_utils.grid_defs import create_valid_sample_grid
         st.session_state.sim_grid = create_valid_sample_grid()
     
     # Initialize fleet if not exists
