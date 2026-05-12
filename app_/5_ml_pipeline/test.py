@@ -1,11 +1,7 @@
-"""
-Test script for Module 5 - ML Pipeline
-Run from: app_/5_ml_pipeline/
-"""
 
 import sys
 import os
-import pandas as pd  # <-- ADDED: missing pandas import
+import pandas as pd 
 import numpy as np
 
 # Add the project root to Python path
@@ -65,17 +61,17 @@ print("-" * 60)
 
 test_scenarios = [
     {"hour": 8, "temp": 25, "humidity": 60, "weather": 1, "season": 1, 
-     "desc": "🌞 Summer morning, clear (8 AM)"},
+     "desc": " Summer morning, clear (8 AM)"},
     {"hour": 14, "temp": 30, "humidity": 50, "weather": 1, "season": 1, 
-     "desc": "🌞 Summer afternoon, hot (2 PM)"},
+     "desc": " Summer afternoon, hot (2 PM)"},
     {"hour": 18, "temp": 22, "humidity": 65, "weather": 1, "season": 1, 
-     "desc": "🌙 Summer evening (6 PM)"},
+     "desc": " Summer evening (6 PM)"},
     {"hour": 8, "temp": 15, "humidity": 70, "weather": 2, "season": 2, 
-     "desc": "☁️ Fall morning, cloudy (8 AM)"},
+     "desc": " Fall morning, cloudy (8 AM)"},
     {"hour": 8, "temp": 5, "humidity": 85, "weather": 3, "season": 3, 
-     "desc": "🌧️ Winter morning, rainy (8 AM)"},
+     "desc": " Winter morning, rainy (8 AM)"},
     {"hour": 2, "temp": 10, "humidity": 80, "weather": 3, "season": 3, 
-     "desc": "🌙 Winter early morning, rainy (2 AM)"},
+     "desc": " Winter early morning, rainy (2 AM)"},
 ]
 
 for scenario in test_scenarios:

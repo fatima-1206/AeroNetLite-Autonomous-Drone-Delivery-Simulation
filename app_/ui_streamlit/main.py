@@ -291,7 +291,7 @@ def run_20_step_simulation():
     Run the complete 20-step simulation as specified in the requirements.
     This function integrates all modules and runs steps 1-20.
     """
-    st.subheader("🔄 20-Step Simulation Demo")
+    st.subheader(" 20-Step Simulation Demo")
     st.markdown("Running the complete 20-step drone delivery simulation...")
     
     # Initialize session state for simulation
@@ -313,7 +313,7 @@ def run_20_step_simulation():
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        if st.button("▶️ Start Simulation", key="start_sim"):
+        if st.button(" Start Simulation", key="start_sim"):
             st.session_state.simulation_step = 0
             st.session_state.simulation_log = []
             st.session_state.simulation_running = True
@@ -323,7 +323,7 @@ def run_20_step_simulation():
             st.session_state.show_log = True
     
     with col2:
-        if st.button("⏸️ Reset", key="reset_sim"):
+        if st.button("⏸ Reset", key="reset_sim"):
             st.session_state.simulation_step = 0
             st.session_state.simulation_log = []
             st.session_state.simulation_running = False
@@ -333,11 +333,11 @@ def run_20_step_simulation():
             st.session_state.show_log = True
     
     with col3:
-        if st.button("📋 Show Log", key="show_log_sim"):
+        if st.button(" Show Log", key="show_log_sim"):
             st.session_state.show_log = not st.session_state.get("show_log", True)
     
     with col4:
-        if st.button("⚡ Run Full Simulation", key="run_full_sim"):
+        if st.button(" Run Full Simulation", key="run_full_sim"):
             st.session_state.simulation_step = 0
             st.session_state.simulation_log = []
             st.session_state.simulation_running = True
@@ -356,7 +356,7 @@ def run_20_step_simulation():
     def _append_log(message: str) -> None:
         st.session_state.simulation_log.append(message)
         log_lines = [f"**Step {index}:** {entry}" for index, entry in enumerate(st.session_state.simulation_log, 1)]
-        log_placeholder.markdown("### 📝 Simulation Event Log\n\n" + "\n\n".join(log_lines))
+        log_placeholder.markdown("###  Simulation Event Log\n\n" + "\n\n".join(log_lines))
 
     if start_requested and st.session_state.simulation_step < 20:
         for step in range(st.session_state.simulation_step + 1, 21):
@@ -455,7 +455,7 @@ def run_20_step_simulation():
             time.sleep(0.4)
 
         progress_bar.progress(1.0)
-        summary_placeholder.success("✅ Simulation Completed Successfully!")
+        summary_placeholder.success(" Simulation Completed Successfully!")
         col_a, col_b, col_c = summary_placeholder.columns(3)
         with col_a:
             st.metric("Completed Deliveries", "8")
@@ -477,7 +477,7 @@ def run_20_step_simulation():
     
     # Display simulation log
     if st.session_state.simulation_log and st.session_state.get("show_log", True):
-        st.markdown("### 📝 Simulation Event Log")
+        st.markdown("###  Simulation Event Log")
         
         # Create a scrollable log area
         log_text = ""
@@ -488,7 +488,7 @@ def run_20_step_simulation():
     
     # Display final results if complete
     if st.session_state.simulation_complete:
-        st.success("✅ Simulation Completed Successfully!")
+        st.success(" Simulation Completed Successfully!")
         
         # Show summary metrics
         col1, col2, col3 = st.columns(3)
@@ -772,7 +772,7 @@ def render_disruption_handler(grid: Grid):
     
     # Check if module is available
     if DisruptionManager is None or Drone is None:
-        st.warning("⚠️ Disruption Handler module not available. Please ensure Module 4 is properly installed.")
+        st.warning(" Disruption Handler module not available. Please ensure Module 4 is properly installed.")
         return
     
     # Initialize session state for drones and disruption manager
@@ -782,7 +782,7 @@ def render_disruption_handler(grid: Grid):
         st.session_state.disruption_event_log = []
     
     # Create sample drones
-    if st.button("🔄 Initialize Sample Drones", key="init_drones"):
+    if st.button(" Initialize Sample Drones", key="init_drones"):
         drone_d1 = Drone(
             id="D1",
             current_position=(1, 1),
@@ -807,7 +807,7 @@ def render_disruption_handler(grid: Grid):
         st.session_state.drones = [drone_d1, drone_d2, drone_d3]
         st.session_state.disruption_manager = DisruptionManager()
         st.session_state.disruption_manager.add_event("DisruptionManager initialized - monitoring 3 drones")
-        st.success("✅ 3 sample drones initialized!")
+        st.success(" 3 sample drones initialized!")
         st.rerun()
             
     # Display drone status
@@ -835,7 +835,7 @@ def render_disruption_handler(grid: Grid):
         with col2:
             nf_col = st.number_input("Col", 0, 9, 7, key="nf_col")
         with col3:
-            if st.button("🚫 Activate No-Fly", key="activate_nf"):
+            if st.button(" Activate No-Fly", key="activate_nf"):
                 if st.session_state.disruption_manager:
                     st.session_state.disruption_manager.trigger_no_fly(grid, nf_row, nf_col)
                     st.success(f"No-fly zone activated at ({nf_row}, {nf_col})")
@@ -856,7 +856,7 @@ def render_disruption_handler(grid: Grid):
             hub_row = st.number_input("Hub Row", 0, 9, 0, key="hub_row")
             hub_col = st.number_input("Hub Col", 0, 9, 0, key="hub_col")
         with col3:
-            if st.button("🏠 Force Return to Hub", key="force_return"):
+            if st.button(" Force Return to Hub", key="force_return"):
                 if st.session_state.disruption_manager and force_return_to_hub:
                     for drone in st.session_state.drones:
                         if drone.id == drone_id:
@@ -874,262 +874,10 @@ def render_disruption_handler(grid: Grid):
         log_df = pd.DataFrame({"Events": st.session_state.disruption_manager.event_log})
         st.dataframe(log_df, use_container_width=True, height=200)
         
-        if st.button("🗑️ Clear Event Log", key="clear_log"):
+        if st.button(" Clear Event Log", key="clear_log"):
             st.session_state.disruption_manager.event_log = []
             st.session_state.disruption_manager.step_counter = 0
             st.rerun()
-
-
-def notusing_render_ml_pipeline(grid: Grid):
-    """Render the ML Pipeline UI section."""
-    st.subheader("Module 5: ML Pipeline - Demand Forecasting & Anomaly Detection")
-    
-    # Check if module is available
-    if predict_demand is None or detect_anomaly is None:
-        st.warning("⚠️ ML Pipeline module not available. Please ensure Module 5 is properly installed.")
-        return
-    
-    # Create tabs for different ML features
-    ml_tab1, ml_tab2, ml_tab3 = st.tabs(["📈 Demand Forecasting", "⚠️ Anomaly Detection", "📊 Model Training"])
-    
-    with ml_tab1:
-        st.write("**Predict Delivery Demand for Any Cell**")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            pred_row = st.number_input("Cell Row", 0, 9, 5, key="pred_row")
-            pred_col = st.number_input("Cell Col", 0, 9, 5, key="pred_col")
-            
-            hour = st.slider("Hour of Day", 0, 23, 14, key="demand_hour")
-            temp = st.slider("Temperature (°C)", -10, 45, 22, key="temp")
-            humidity = st.slider("Humidity (%)", 0, 100, 60, key="humidity")
-            
-        with col2:
-            weather = st.selectbox("Weather Condition", [1, 2, 3, 4], 
-                                  format_func=lambda x: {1: "Clear", 2: "Cloudy", 3: "Rainy", 4: "Heavy Rain"}.get(x, "Unknown"),
-                                  key="weather")
-            season = st.selectbox("Season", [1, 2, 3, 4],
-                                 format_func=lambda x: {1: "Spring", 2: "Summer", 3: "Fall", 4: "Winter"}.get(x, "Unknown"),
-                                 key="season")
-        
-        if st.button("🔮 Predict Demand", key="predict_demand_btn"):
-            try:
-                # Check if model exists
-                model_path = Path(APP_DIR) / "data" / "processed" / "demand_model.pkl"
-                if model_path.exists():
-                    demand = predict_demand(
-                        hour=hour,
-                        temp=temp,
-                        humidity=humidity,
-                        weather=weather,
-                        season=season,
-                        model_path=str(model_path)
-                    )
-                    cell = grid.get_cell(pred_row, pred_col)
-                    if cell:
-                        st.metric("Predicted Demand", f"{demand:.0f} units")
-                        st.info(f"Cell ({pred_row}, {pred_col}) - {cell.zone} Zone\n"
-                               f"• Cell Base Demand: {cell.demand:.2f}\n"
-                               f"• Density Factor: {cell.density}/10000\n"
-                               f"• Weighted Prediction: {demand * (cell.density/10000):.2f}")
-                    else:
-                        st.metric("Predicted Demand", f"{demand:.0f} units")
-                else:
-                    st.warning("Demand model not trained yet. Go to 'Model Training' tab to train models.")
-            except Exception as e:
-                st.error(f"Prediction failed: {e}")
-        
-        # Show demand forecast for whole grid
-        if st.button("🌍 Show Full Grid Demand Forecast", key="full_forecast"):
-            if get_module_5_output:
-                try:
-                    output = get_module_5_output(grid, simulation_step=hour)
-                    forecasts = output['demand_forecast']
-                    
-                    # Create forecast dataframe
-                    forecast_data = []
-                    for cell_key, demand_val in forecasts.items():
-                        forecast_data.append({"Cell": cell_key, "Forecasted Demand": demand_val})
-                    
-                    st.dataframe(pd.DataFrame(forecast_data).head(20), use_container_width=True)
-                    st.caption(f"Showing first 20 of {len(forecasts)} cells")
-                except Exception as e:
-                    st.error(f"Failed to get forecast: {e}")
-            else:
-                st.error("Integration function not available")
-    
-    with ml_tab2:
-        st.write("**Drone Telemetry Anomaly Detection**")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            battery_drop = st.slider("Battery Drop (%)", 0.0, 100.0, 2.0, key="battery_drop")
-            speed = st.slider("Speed (m/s)", 0.0, 100.0, 10.0, key="speed")
-            route_deviation = st.slider("Route Deviation (m)", 0.0, 500.0, 5.0, key="route_deviation")
-        
-        with col2:
-            if st.button("🔍 Detect Anomaly", key="detect_anomaly_btn"):
-                try:
-                    model_path = Path(APP_DIR) / "data" / "processed" / "anomaly_model.pkl"
-                    if model_path.exists():
-                        result = detect_anomaly(
-                            battery_drop=battery_drop,
-                            speed=speed,
-                            route_deviation=route_deviation,
-                            model_path=str(model_path)
-                        )
-                        
-                        # Display result with appropriate color
-                        if result["class"] == "normal":
-                            st.success(f"✅ Status: **{result['class'].upper()}**")
-                        elif result["class"] == "battery_anomaly":
-                            st.warning(f"⚠️ Alert: **{result['class'].replace('_', ' ').upper()}**")
-                        elif result["class"] == "route_anomaly":
-                            st.warning(f"⚠️ Alert: **{result['class'].replace('_', ' ').upper()}**")
-                        else:
-                            st.error(f"🚨 Alert: **{result['class'].replace('_', ' ').upper()}**")
-                        
-                        st.metric("Confidence", f"{result['confidence']:.2%}")
-                        
-                        # Provide recommendations
-                        if result["class"] == "battery_anomaly":
-                            st.info("💡 Recommendation: Land drone at nearest charging pad immediately")
-                        elif result["class"] == "route_anomaly":
-                            st.info("💡 Recommendation: Reroute drone or request manual intervention")
-                        elif result["class"] == "sensor_spike":
-                            st.info("💡 Recommendation: Verify sensor calibration, continue mission with caution")
-                    else:
-                        st.warning("Anomaly detection model not trained yet. Go to 'Model Training' tab to train models.")
-                except Exception as e:
-                    st.error(f"Detection failed: {e}")
-        
-        # Show anomaly alerts from integration
-        if st.button("📡 Simulate Real-Time Telemetry Alerts", key="simulate_alerts"):
-            if get_module_5_output:
-                try:
-                    output = get_module_5_output(grid, simulation_step=12)
-                    alerts = output['anomaly_alerts']
-                    
-                    if alerts:
-                        st.warning(f"🚨 {len(alerts)} Anomaly Alerts Detected!")
-                        alert_data = []
-                        for alert in alerts:
-                            alert_data.append({
-                                "Drone ID": alert['drone_id'],
-                                "Anomaly Type": alert['type'].replace('_', ' ').upper(),
-                                "Confidence": f"{alert['confidence']:.2%}"
-                            })
-                        st.dataframe(pd.DataFrame(alert_data), use_container_width=True)
-                    else:
-                        st.success("✅ No anomalies detected in current telemetry data")
-                except Exception as e:
-                    st.error(f"Failed to simulate alerts: {e}")
-            else:
-                st.error("Integration function not available")
-    
-    with ml_tab3:
-        st.write("**Train and Manage ML Models**")
-        
-        st.info("📁 Models are saved to: `data/processed/` directory")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            if st.button("📊 Train Demand Model (requires train.csv)", key="train_demand"):
-                if train_demand_model:
-                    with st.spinner("Training demand forecasting model..."):
-                        try:
-                            train_path = Path(APP_DIR) / ".." / "data" / "raw" / "train.csv"
-                            model_path = Path(APP_DIR) / "data" / "processed" / "demand_model.pkl"
-                            
-                            os.makedirs(model_path.parent, exist_ok=True)
-                            
-                            if train_path.exists():
-                                metrics = train_demand_model(
-                                    csv_path=str(train_path),
-                                    model_path=str(model_path)
-                                )
-                                st.success(f"✅ Demand model trained successfully!")
-                                st.metric("MAE (Mean Absolute Error)", f"{metrics['mae']:.2f}")
-                                st.metric("RMSE (Root Mean Square Error)", f"{metrics['rmse']:.2f}")
-                                st.info(f"📁 Model saved to: {model_path}")
-                            else:
-                                st.error(f"❌ train.csv not found at {train_path}")
-                                st.markdown("Please download from [Kaggle Bike Sharing Demand](https://www.kaggle.com/c/bike-sharing-demand/data)")
-                        except Exception as e:
-                            st.error(f"Training failed: {e}")
-                else:
-                    st.error("Train demand model function not available")
-        
-        with col2:
-            if st.button("🔧 Generate Synthetic Telemetry", key="gen_telemetry"):
-                if create_synthetic_telemetry:
-                    with st.spinner("Generating synthetic telemetry data..."):
-                        try:
-                            telemetry_path = Path(APP_DIR) / "data" / "raw" / "synthetic_telemetry.csv"
-                            os.makedirs(telemetry_path.parent, exist_ok=True)
-                            
-                            df = create_synthetic_telemetry(
-                                output_path=str(telemetry_path),
-                                n_samples=1000
-                            )
-                            st.success(f"✅ Generated {len(df)} synthetic telemetry samples")
-                            
-                            # Show distribution
-                            dist_data = []
-                            for cls, count in df['label'].value_counts().items():
-                                dist_data.append({"Class": cls, "Count": count, "Percentage": f"{count/len(df)*100:.1f}%"})
-                            st.dataframe(pd.DataFrame(dist_data), use_container_width=True)
-                        except Exception as e:
-                            st.error(f"Generation failed: {e}")
-                else:
-                    st.error("Create synthetic telemetry function not available")
-        
-        if st.button("🎯 Train Anomaly Detection Model", key="train_anomaly"):
-            if train_anomaly_model:
-                with st.spinner("Training anomaly detection model..."):
-                    try:
-                        telemetry_path = Path(APP_DIR) / "data" / "raw" / "synthetic_telemetry.csv"
-                        model_path = Path(APP_DIR) / "data" / "processed" / "anomaly_model.pkl"
-                        
-                        if telemetry_path.exists():
-                            metrics = train_anomaly_model(
-                                csv_path=str(telemetry_path),
-                                model_path=str(model_path)
-                            )
-                            st.success(f"✅ Anomaly detection model trained successfully!")
-                            st.metric("Accuracy", f"{metrics['accuracy']*100:.2f}%")
-                            
-                            # Show confusion matrix
-                            st.write("**Confusion Matrix:**")
-                            cm = metrics['confusion_matrix']
-                            cm_df = pd.DataFrame(cm, 
-                                                columns=['normal', 'battery', 'route', 'sensor'],
-                                                index=['normal', 'battery', 'route', 'sensor'])
-                            st.dataframe(cm_df, use_container_width=True)
-                        else:
-                            st.warning("No synthetic telemetry found. Generate telemetry data first.")
-                    except Exception as e:
-                        st.error(f"Training failed: {e}")
-            else:
-                st.error("Train anomaly model function not available")
-        
-        # Model status
-        st.write("**Model Status:**")
-        demand_exists = (Path(APP_DIR) / "data" / "processed" / "demand_model.pkl").exists()
-        anomaly_exists = (Path(APP_DIR) / "data" / "processed" / "anomaly_model.pkl").exists()
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            if demand_exists:
-                st.success("✅ Demand Model: Trained")
-            else:
-                st.warning("⚠️ Demand Model: Not Trained")
-        with col2:
-            if anomaly_exists:
-                st.success("✅ Anomaly Model: Trained")
-            else:
-                st.warning("⚠️ Anomaly Model: Not Trained")
 
 def render_ml_pipeline(grid: Grid):
     """Render the ML Pipeline UI section with heatmap and anomaly view."""
@@ -1137,11 +885,11 @@ def render_ml_pipeline(grid: Grid):
     
     # Check if module is available
     if predict_demand is None or detect_anomaly is None:
-        st.warning("⚠️ ML Pipeline module not available. Please ensure Module 5 is properly installed.")
+        st.warning(" ML Pipeline module not available. Please ensure Module 5 is properly installed.")
         return
     
     # Create tabs for different ML features
-    ml_tab1, ml_tab2, ml_tab3, ml_tab4 = st.tabs(["📈 Demand Forecasting", "⚠️ Anomaly Detection", "🌡️ Demand Heatmap", "📊 Model Training"])
+    ml_tab1, ml_tab2, ml_tab3, ml_tab4 = st.tabs([" Demand Forecasting", " Anomaly Detection", " Demand Heatmap", " Model Training"])
     
     with ml_tab1:
         st.write("**Predict Delivery Demand for Any Cell**")
@@ -1163,7 +911,7 @@ def render_ml_pipeline(grid: Grid):
                                  format_func=lambda x: {1: "Spring", 2: "Summer", 3: "Fall", 4: "Winter"}.get(x, "Unknown"),
                                  key="season")
         
-        if st.button("🔮 Predict Demand", key="predict_demand_btn"):
+        if st.button(" Predict Demand", key="predict_demand_btn"):
             try:
                 model_path = Path(APP_DIR) / "data" / "processed" / "demand_model.pkl"
                 if model_path.exists():
@@ -1190,7 +938,7 @@ def render_ml_pipeline(grid: Grid):
                 st.error(f"Prediction failed: {e}")
         
         # Show demand forecast for whole grid
-        if st.button("🌍 Show Full Grid Forecast Data", key="full_forecast"):
+        if st.button(" Show Full Grid Forecast Data", key="full_forecast"):
             if get_module_5_output:
                 try:
                     output = get_module_5_output(grid, simulation_step=hour)
@@ -1218,7 +966,7 @@ def render_ml_pipeline(grid: Grid):
             route_deviation = st.slider("Route Deviation (m)", 0.0, 500.0, 5.0, key="route_deviation")
         
         with col2:
-            if st.button("🔍 Detect Anomaly", key="detect_anomaly_btn"):
+            if st.button(" Detect Anomaly", key="detect_anomaly_btn"):
                 try:
                     model_path = Path(APP_DIR) / "data" / "processed" / "anomaly_model.pkl"
                     if model_path.exists():
@@ -1231,30 +979,30 @@ def render_ml_pipeline(grid: Grid):
                         
                         # Display result with appropriate color
                         if result["class"] == "normal":
-                            st.success(f"✅ Status: **{result['class'].upper()}**")
+                            st.success(f" Status: **{result['class'].upper()}**")
                         elif result["class"] == "battery_anomaly":
-                            st.warning(f"⚠️ Alert: **{result['class'].replace('_', ' ').upper()}**")
+                            st.warning(f" Alert: **{result['class'].replace('_', ' ').upper()}**")
                         elif result["class"] == "route_anomaly":
-                            st.warning(f"⚠️ Alert: **{result['class'].replace('_', ' ').upper()}**")
+                            st.warning(f" Alert: **{result['class'].replace('_', ' ').upper()}**")
                         else:
-                            st.error(f"🚨 Alert: **{result['class'].replace('_', ' ').upper()}**")
+                            st.error(f" Alert: **{result['class'].replace('_', ' ').upper()}**")
                         
                         st.metric("Confidence", f"{result['confidence']:.2%}")
                         
                         # Provide recommendations
                         if result["class"] == "battery_anomaly":
-                            st.info("💡 Recommendation: Land drone at nearest charging pad immediately")
+                            st.info(" Recommendation: Land drone at nearest charging pad immediately")
                         elif result["class"] == "route_anomaly":
-                            st.info("💡 Recommendation: Reroute drone or request manual intervention")
+                            st.info(" Recommendation: Reroute drone or request manual intervention")
                         elif result["class"] == "sensor_spike":
-                            st.info("💡 Recommendation: Verify sensor calibration, continue mission with caution")
+                            st.info(" Recommendation: Verify sensor calibration, continue mission with caution")
                     else:
                         st.warning("Anomaly detection model not trained yet. Go to 'Model Training' tab to train models.")
                 except Exception as e:
                     st.error(f"Detection failed: {e}")
         
         # Show anomaly alerts from integration
-        if st.button("📡 Simulate Real-Time Telemetry Alerts", key="simulate_alerts"):
+        if st.button(" Simulate Real-Time Telemetry Alerts", key="simulate_alerts"):
             if get_module_5_output:
                 try:
                     output = get_module_5_output(grid, simulation_step=12)
@@ -1295,7 +1043,7 @@ def render_ml_pipeline(grid: Grid):
                                          format_func=lambda x: {1: "Spring", 2: "Summer", 3: "Fall", 4: "Winter"}.get(x, "Unknown"),
                                          key="heatmap_season")
         
-        if st.button("🗺️ Generate Demand Heatmap", key="generate_heatmap"):
+        if st.button(" Generate Demand Heatmap", key="generate_heatmap"):
             if get_module_5_output:
                 with st.spinner("Generating demand forecast heatmap..."):
                     try:
@@ -1322,7 +1070,7 @@ def render_ml_pipeline(grid: Grid):
                             
                             # Find highest demand cell
                             max_cell = max(forecasts.items(), key=lambda x: x[1])
-                            st.info(f"📍 **Highest demand cell:** {max_cell[0]} with {max_cell[1]:.0f} units")
+                            st.info(f" **Highest demand cell:** {max_cell[0]} with {max_cell[1]:.0f} units")
                         else:
                             st.warning("No forecast data available")
                             fallback_forecast = {}
@@ -1347,7 +1095,7 @@ def render_ml_pipeline(grid: Grid):
         # Option to show heatmap from the full grid forecast
         st.write("---")
         st.write("**Quick Heatmap from Current Grid (Fallback)**")
-        if st.button("📊 Show Heatmap from Grid Demand", key="quick_heatmap"):
+        if st.button(" Show Heatmap from Grid Demand", key="quick_heatmap"):
             demand_dict = {}
             for row in grid.cells:
                 for cell in row:
@@ -1370,12 +1118,12 @@ def render_ml_pipeline(grid: Grid):
         st.write("**Train and Manage ML Models**")
         
         # ... (your existing model training code remains the same)
-        st.info("📁 Models are saved to: `data/processed/` directory")
+        st.info(" Models are saved to: `data/processed/` directory")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            if st.button("📊 Train Demand Model (requires train.csv)", key="train_demand"):
+            if st.button(" Train Demand Model (requires train.csv)", key="train_demand"):
                 if train_demand_model:
                     with st.spinner("Training demand forecasting model..."):
                         try:
@@ -1389,12 +1137,12 @@ def render_ml_pipeline(grid: Grid):
                                     csv_path=str(train_path),
                                     model_path=str(model_path)
                                 )
-                                st.success(f"✅ Demand model trained successfully!")
+                                st.success(f" Demand model trained successfully!")
                                 st.metric("MAE (Mean Absolute Error)", f"{metrics['mae']:.2f}")
                                 st.metric("RMSE (Root Mean Square Error)", f"{metrics['rmse']:.2f}")
-                                st.info(f"📁 Model saved to: {model_path}")
+                                st.info(f" Model saved to: {model_path}")
                             else:
-                                st.error(f"❌ train.csv not found at {train_path}")
+                                st.error(f" train.csv not found at {train_path}")
                                 st.markdown("Please download from [Kaggle Bike Sharing Demand](https://www.kaggle.com/c/bike-sharing-demand/data)")
                         except Exception as e:
                             st.error(f"Training failed: {e}")
@@ -1413,7 +1161,7 @@ def render_ml_pipeline(grid: Grid):
                                 output_path=str(telemetry_path),
                                 n_samples=1000
                             )
-                            st.success(f"✅ Generated {len(df)} synthetic telemetry samples")
+                            st.success(f" Generated {len(df)} synthetic telemetry samples")
                             
                             # Show distribution
                             dist_data = []
@@ -1425,7 +1173,7 @@ def render_ml_pipeline(grid: Grid):
                 else:
                     st.error("Create synthetic telemetry function not available")
         
-        if st.button("🎯 Train Anomaly Detection Model", key="train_anomaly"):
+        if st.button(" Train Anomaly Detection Model", key="train_anomaly"):
             if train_anomaly_model:
                 with st.spinner("Training anomaly detection model..."):
                     try:
@@ -1437,7 +1185,7 @@ def render_ml_pipeline(grid: Grid):
                                 csv_path=str(telemetry_path),
                                 model_path=str(model_path)
                             )
-                            st.success(f"✅ Anomaly detection model trained successfully!")
+                            st.success(f" Anomaly detection model trained successfully!")
                             st.metric("Accuracy", f"{metrics['accuracy']*100:.2f}%")
                             
                             # Show confusion matrix
@@ -1462,14 +1210,14 @@ def render_ml_pipeline(grid: Grid):
         col1, col2 = st.columns(2)
         with col1:
             if demand_exists:
-                st.success("✅ Demand Model: Trained")
+                st.success(" Demand Model: Trained")
             else:
-                st.warning("⚠️ Demand Model: Not Trained")
+                st.warning(" Demand Model: Not Trained")
         with col2:
             if anomaly_exists:
-                st.success("✅ Anomaly Model: Trained")
+                st.success(" Anomaly Model: Trained")
             else:
-                st.warning("⚠️ Anomaly Model: Not Trained")
+                st.warning(" Anomaly Model: Not Trained")
 
 def main():
 	"""Main Streamlit app."""
@@ -1824,7 +1572,7 @@ def main():
 	# ========== 20-Step Simulation ==========
     
 	st.markdown("---")
-	st.markdown("## 🎯 20-Step Simulation Demo")
+	st.markdown("##  20-Step Simulation Demo")
 	st.markdown("Complete end-to-end simulation integrating all modules")
 	
 	run_20_step_simulation()
